@@ -39,13 +39,13 @@ class show_toc_quickpanel(quickpanel.CancelEntriesQuickpanel):
         toc_indentations = get_setting("toc_indentations", {})
         toc_labels = get_setting("toc_labels", [])
 
-        labels = ana.filter_commands(toc_section_commands + toc_labels)
+        labels_secs = ana.filter_commands(toc_section_commands + toc_labels)
         # filter the labels and sections to only get the labels
         # (faster than an additional query)
-        secs = [c for c in labels if c.command in toc_section_commands]
+        secs = [c for c in labels_secs if c.command in toc_section_commands]
 
         if only_file:
-            labels = [l for l in labels if l.file_name == only_file]
+            labels_secs = [l for l in labels_secs if l.file_name == only_file]
             secs = [s for s in secs if s.file_name == only_file]
 
         # create the user readably captions
@@ -59,19 +59,19 @@ class show_toc_quickpanel(quickpanel.CancelEntriesQuickpanel):
         caption_secs = [_make_caption(toc_indentations, s, indent_offset)
                         for s in secs]
 
-        caption_labels = [_make_caption(toc_indentations, l, indent_offset)
-                          for l in labels]
+        caption_labels_secs = [_make_caption(toc_indentations, l, indent_offset)
+                          for l in labels_secs]
 
         self.__only_sec = True
         # init the superclass with a copy of the section elements
         super(show_toc_quickpanel, self).__init__(
-            list(caption_secs), list(secs))
+            list(caption_labels_secs), list(labels_secs))
 
         # story necessary fields
         self.__secs = secs
-        self.__labels = labels
+        self.__labels = labels_secs
         self.__caption_secs = caption_secs
-        self.__caption_labels = caption_labels
+        self.__caption_labels_secs = caption_labels_secs
 
         # add a item to show the labels
         self.add_item(quickpanel.AT_END, self.__show_string,
@@ -98,7 +98,7 @@ class show_toc_quickpanel(quickpanel.CancelEntriesQuickpanel):
     def __show_labels(self):
         """Handles the toggle to show the labels"""
         # exchange the captions after the offset (with no navigation entries)
-        self.captions = self.captions[0:self._offset] + self.__caption_labels
+        self.captions = self.captions[0:self._offset] + self.__caption_labels_secs
         # change the name of the toggle from "Show" to "Hide"
         index = self.captions.index(self.__show_string)
         self.captions[index] = self.__hide_string
